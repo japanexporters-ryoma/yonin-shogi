@@ -1,0 +1,14 @@
+{
+  "name": "yonin-shogi",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2",
+    "vitest": "^2.1.9"
+  },
+  "private": true,
+  "type": "module"
+}
