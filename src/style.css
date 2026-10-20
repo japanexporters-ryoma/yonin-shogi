@@ -244,3 +244,52 @@ button.primary { background: var(--p1); border-color: var(--p1); }
 .ranks .p1 { color: #7fb0ff; }
 .ranks .p2 { color: #6fd39c; }
 .ranks .p3 { color: #ffb45c; }
+
+.clock { margin-left: 6px; font-variant-numeric: tabular-nums; color: var(--fg); }
+.clock.hurry { color: #ff5252; }
+
+main.home { gap: 14px; padding-top: 32px; }
+.title { font-size: 30px; margin: 0; }
+.lead { margin: 0; color: var(--muted); text-align: center; line-height: 1.6; }
+.error { margin: 0; color: #ff7b7b; font-weight: 700; }
+.note { margin: 0; color: var(--muted); font-size: 13px; text-align: center; }
+
+.menu-group {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  background: #3a2d21;
+  border-radius: 12px;
+}
+
+button.big { width: 100%; padding: 14px; font-size: 16px; font-weight: 700; }
+
+.name-input, .link-box {
+  width: 100%;
+  font: inherit;
+  font-size: 16px;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #5a4734;
+  background: #1f1812;
+  color: var(--fg);
+}
+.link-box { font-size: 13px; color: var(--muted); }
+
+.seats { list-style: none; padding: 0; margin: 0; width: 100%; display: grid; gap: 6px; }
+.seat {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 10px;
+  background: #3a2d21;
+  font-weight: 700;
+}
+.seat.vacant { color: var(--muted); font-weight: 400; }
+.seat.p0 { --pc: var(--p0); }
+.seat.p1 { --pc: var(--p1); }
+.seat.p2 { --pc: var(--p2); }
+.seat.p3 { --pc: var(--p3); }

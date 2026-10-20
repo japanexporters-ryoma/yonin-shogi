@@ -50,6 +50,7 @@ export interface GameState {
   eliminated: Player[][];
   moveCount: number;
   consecutiveTimeouts: Record<Player, number>;
+  lastMove: Move | null;
   result: GameResult | null;
 }
 

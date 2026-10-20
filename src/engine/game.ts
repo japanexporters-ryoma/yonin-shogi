@@ -85,6 +85,7 @@ export function createGame(): GameState {
     eliminated: [],
     moveCount: 0,
     consecutiveTimeouts: perPlayer(() => 0),
+    lastMove: null,
     result: null,
   };
 }
@@ -197,6 +198,7 @@ function cloneState(state: GameState): GameState {
     eliminated: state.eliminated.map((group) => [...group]),
     moveCount: state.moveCount,
     consecutiveTimeouts: { ...state.consecutiveTimeouts },
+    lastMove: state.lastMove,
     result: state.result,
   };
 }
@@ -258,6 +260,7 @@ export function applyMove(state: GameState, move: Move, rules: Rules = DEFAULT_R
   const next = cloneState(state);
   const player = next.turn;
   next.consecutiveTimeouts[player] = 0;
+  next.lastMove = move;
 
   if (move.type === 'drop') {
     next.hands[player][move.kind] -= 1;
@@ -285,6 +288,7 @@ export function applyTimeout(state: GameState, rules: Rules = DEFAULT_RULES): Ga
   if (state.result) throw new Error('game is over');
   const next = cloneState(state);
   const player = next.turn;
+  next.lastMove = null;
   next.consecutiveTimeouts[player] += 1;
   if (next.consecutiveTimeouts[player] >= rules.timeoutsToEliminate) {
     eliminate(next, [player], null);
