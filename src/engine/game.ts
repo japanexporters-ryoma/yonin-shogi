@@ -95,7 +95,8 @@ export function pieceAt(state: GameState, { x, y }: Square): Piece | null {
 }
 
 // その駒が動ける先（味方の駒がいるマスは除く）。成るかどうかは別に判定する。
-function destinations(state: GameState, from: Square, piece: Piece): Square[] {
+// includeOwn なら味方の駒がいるマス（その駒を守っているマス）も含める。
+function destinations(state: GameState, from: Square, piece: Piece, includeOwn = false): Square[] {
   const result: Square[] = [];
   const { steps, rays } = movement(piece);
   for (const [lx, ly] of steps) {
@@ -103,7 +104,7 @@ function destinations(state: GameState, from: Square, piece: Piece): Square[] {
     const to = { x: from.x + dx, y: from.y + dy };
     if (!inBounds(to)) continue;
     const target = pieceAt(state, to);
-    if (!target || target.owner !== piece.owner) result.push(to);
+    if (!target || target.owner !== piece.owner || includeOwn) result.push(to);
   }
   for (const [lx, ly] of rays) {
     const [dx, dy] = rotateVector(piece.owner, lx, ly);
@@ -111,7 +112,7 @@ function destinations(state: GameState, from: Square, piece: Piece): Square[] {
     while (inBounds(to)) {
       const target = pieceAt(state, to);
       if (target) {
-        if (target.owner !== piece.owner) result.push(to);
+        if (target.owner !== piece.owner || includeOwn) result.push(to);
         break;
       }
       result.push(to);
@@ -257,6 +258,11 @@ function finishTurn(state: GameState, rules: Rules): void {
 
 export function applyMove(state: GameState, move: Move, rules: Rules = DEFAULT_RULES): GameState {
   if (!isLegal(state, move)) throw new Error('illegal move');
+  return applyLegalMove(state, move, rules);
+}
+
+// legalMoves() が返した手をそのまま適用する（合法かどうかの確認を省く）。CPU の読み用。
+export function applyLegalMove(state: GameState, move: Move, rules: Rules = DEFAULT_RULES): GameState {
   const next = cloneState(state);
   const player = next.turn;
   next.consecutiveTimeouts[player] = 0;
@@ -319,4 +325,17 @@ export function isInCheck(state: GameState, player: Player): boolean {
     }
   }
   return false;
+}
+
+// player の駒が利いているマスの数（盤と同じ並び：[y][x]）。味方の駒を守っている利きも数える。
+export function attackCounts(state: GameState, player: Player): number[][] {
+  const counts = Array.from({ length: BOARD_SIZE }, () => Array<number>(BOARD_SIZE).fill(0));
+  for (let y = 0; y < BOARD_SIZE; y++) {
+    for (let x = 0; x < BOARD_SIZE; x++) {
+      const p = state.board[y][x];
+      if (!p || p.owner !== player) continue;
+      for (const to of destinations(state, { x, y }, p, true)) counts[to.y][to.x] += 1;
+    }
+  }
+  return counts;
 }

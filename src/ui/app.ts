@@ -1,4 +1,4 @@
-import { Player, applyMove, createGame, type GameState } from '../engine';
+import { Player, applyMove, chooseCpuMove, createGame, type CpuLevel, type GameState } from '../engine';
 import type { Backend } from '../online/backend';
 import { firebaseConfig } from '../online/config';
 import { MemoryBackend } from '../online/memory';
@@ -110,6 +110,13 @@ export async function mountApp(root: HTMLElement): Promise<void> {
       );
     }
 
+    const cpu = el(
+      'section',
+      'menu-group',
+      el('div', 'row2', button('CPUと対戦（よわい）', () => showCpu('easy'), 'big'), button('CPUと対戦（ふつう）', () => showCpu('normal'), 'big')),
+      el('p', 'note', 'あなた1人とCPU3人で対戦します。通信なしで遊べます。'),
+    );
+
     const local = el(
       'section',
       'menu-group',
@@ -124,6 +131,7 @@ export async function mountApp(root: HTMLElement): Promise<void> {
       el('p', 'lead', '友達4人で遊べる将棋。玉を取られたら脱落、最後まで残った人の勝ちです。'),
       nameInput,
       online,
+      cpu,
       local,
     );
     if (message) main.insertBefore(el('p', 'error', message), nameInput);
@@ -158,6 +166,57 @@ export async function mountApp(root: HTMLElement): Promise<void> {
       ],
       onLeave: () => showHome(),
     });
+  }
+
+  function showCpu(level: CpuLevel): void {
+    clear();
+    const human = Player.South;
+    const cpuNames: Record<Player, string> = {
+      [Player.South]: load(NAME_KEY) || 'あなた',
+      [Player.West]: 'CPU 1',
+      [Player.North]: 'CPU 2',
+      [Player.East]: 'CPU 3',
+    };
+    let game: GameState = createGame();
+    let pending: number | null = null;
+
+    // CPU の番なら少し待ってから指す。あなたが脱落した後は早送りで最後まで進める。
+    const scheduleCpu = () => {
+      if (pending !== null || game.result || game.turn === human) return;
+      const delay = game.alive[human] ? 700 : 120;
+      pending = window.setTimeout(() => {
+        pending = null;
+        game = applyMove(game, chooseCpuMove(game, level));
+        screen?.refresh();
+        scheduleCpu();
+      }, delay);
+    };
+
+    screen = new GameScreen(root, {
+      game: () => game,
+      viewer: () => human,
+      canPlay: (p) => p === human,
+      isMe: (p) => p === human,
+      submit: (move) => {
+        game = applyMove(game, move);
+        screen?.refresh();
+        scheduleCpu();
+      },
+      name: (p) => cpuNames[p],
+      isOnline: () => true,
+      deadline: () => null,
+      now: () => Date.now(),
+      headerButtons: () => [
+        button('メニュー', () => {
+          if (game.result || confirm('対局をやめてメニューに戻りますか？')) showHome();
+        }),
+      ],
+      onLeave: () => showHome(),
+    });
+    cleanup = () => {
+      if (pending !== null) window.clearTimeout(pending);
+    };
+    scheduleCpu();
   }
 
   async function createRoom(name: string): Promise<void> {

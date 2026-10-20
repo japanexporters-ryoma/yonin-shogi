@@ -225,6 +225,14 @@ export class GameScreen {
   }
 
   private render(): void {
+    // 動かせる手がまったくないときは自動でパスする。
+    if (this.myTurn()) {
+      const moves = legalMoves(this.game);
+      if (moves.length === 1 && moves[0].type === 'pass') {
+        const pass = moves[0];
+        queueMicrotask(() => this.play(pass));
+      }
+    }
     const v = this.source.viewer();
     const others = [1, 2, 3].map((d) => ((v + d) % 4) as Player);
 

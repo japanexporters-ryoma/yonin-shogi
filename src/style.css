@@ -293,3 +293,6 @@ button.big { width: 100%; padding: 14px; font-size: 16px; font-weight: 700; }
 .seat.p1 { --pc: var(--p1); }
 .seat.p2 { --pc: var(--p2); }
 .seat.p3 { --pc: var(--p3); }
+
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.row2 button.big { padding: 14px 6px; font-size: 14px; }
